@@ -3,27 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Müşteri Sistem</title>
+<title>Müşteri Sistemi Pro</title>
 
 <style>
 body{
     font-family:Arial;
     background:#0f172a;
     color:white;
+    margin:0;
+}
+
+.center{
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
 }
 
 .box{
     background:#1e293b;
     padding:20px;
     border-radius:12px;
-    width:300px;
+    width:320px;
 }
 
-input{
+input, textarea{
     width:100%;
     padding:10px;
     margin:5px 0;
@@ -42,11 +46,33 @@ button{
 
 .kayit{background:#22c55e;color:white;}
 .giris{background:#3b82f6;color:white;}
+
+.hidden{display:none;}
+
+.panel{
+    padding:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.musteri{
+    background:#334155;
+    padding:10px;
+    border-radius:10px;
+    margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
+<div id="login" class="center">
 <div class="box">
 <h2>Giriş Sistemi</h2>
 
@@ -56,11 +82,36 @@ button{
 <button class="kayit" onclick="kayit(u.value,p.value)">Kayıt Ol</button>
 <button class="giris" onclick="giris(u.value,p.value)">Giriş Yap</button>
 </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel" class="hidden panel">
+
+<div class="card">
+<h2>Müşteri Ekle</h2>
+
+<input id="ad" placeholder="Ad Soyad">
+<input id="borc" type="number" placeholder="Borç">
+<textarea id="not" placeholder="Not"></textarea>
+
+<button onclick="ekle()">Ekle</button>
+</div>
+
+<div class="card">
+<h2>Müşteriler</h2>
+<div id="liste"></div>
+</div>
+
+</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8BbnrGzsljYnsUV5pqROzQL--C686n_0",
@@ -74,35 +125,59 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// username → fake email
-function toEmail(u){
-  return u + "@app.local";
+// fake email
+const mail = (u)=> u + "@app.local";
+
+// LOGIN
+window.kayit = function(u,p){
+createUserWithEmailAndPassword(auth, mail(u), p)
+.then(()=>alert("Kayıt başarılı"))
+.catch(e=>alert(e.message));
 }
 
-// KAYIT
-window.kayit = function(username, password){
-
-  createUserWithEmailAndPassword(auth, toEmail(username), password)
-  .then(()=>{
-      alert("Kayıt başarılı");
-  })
-  .catch(e=>{
-      alert(e.message);
-  });
+window.giris = function(u,p){
+signInWithEmailAndPassword(auth, mail(u), p)
+.then(()=>{
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("panel").classList.remove("hidden");
+})
+.catch(()=>alert("Hatalı giriş"));
+}
 
 }
 
-// GİRİŞ
-window.giris = function(username, password){
+// LOCAL MÜŞTERİ SİSTEMİ
+let musteriler = JSON.parse(localStorage.getItem("musteriler")) || [];
 
-  signInWithEmailAndPassword(auth, toEmail(username), password)
-  .then(()=>{
-      alert("Giriş başarılı");
-      document.body.innerHTML = "<h1 style='color:white'>Giriş yaptın 🎉</h1>";
-  })
-  .catch(()=>{
-      alert("Hatalı giriş");
-  });
+window.ekle = function(){
+
+let ad = document.getElementById("ad").value;
+let borc = document.getElementById("borc").value;
+let not = document.getElementById("not").value;
+
+musteriler.push({ad,borc,not});
+
+localStorage.setItem("musteriler", JSON.stringify(musteriler));
+
+goster();
+}
+
+window.goster = function(){
+
+let liste = document.getElementById("liste");
+liste.innerHTML = "";
+
+musteriler.forEach((m)=>{
+
+liste.innerHTML += `
+<div class="musteri">
+<b>${m.ad}</b><br>
+Borç: ${m.borc}<br>
+Not: ${m.not}
+</div>
+`;
+
+});
 
 }
 
