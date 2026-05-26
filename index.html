@@ -3,496 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SUNA  Müşteri Takip Sistemi</title>
+<title>Müşteri Sistem</title>
 
 <style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial;
-}
-
 body{
+    font-family:Arial;
     background:#0f172a;
     color:white;
-    padding:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
-.container{
-    max-width:800px;
-    margin:auto;
-}
-
-.card{
+.box{
     background:#1e293b;
     padding:20px;
-    border-radius:15px;
-    margin-bottom:20px;
-    box-shadow:0 0 10px rgba(0,0,0,0.3);
+    border-radius:12px;
+    width:300px;
 }
 
-h1{
-    text-align:center;
-    margin-bottom:20px;
-}
-
-input, textarea, select{
+input{
     width:100%;
-    padding:12px;
-    margin-top:10px;
+    padding:10px;
+    margin:5px 0;
     border:none;
-    border-radius:10px;
-    background:#334155;
-    color:white;
+    border-radius:8px;
 }
 
 button{
     width:100%;
-    padding:12px;
+    padding:10px;
     margin-top:10px;
     border:none;
-    border-radius:10px;
+    border-radius:8px;
     cursor:pointer;
-    font-weight:bold;
 }
 
-.ekleBtn{
-    background:#3b82f6;
-    color:white;
-}
-
-.silBtn{
-    background:#ef4444;
-    color:white;
-}
-
-.duzenleBtn{
-    background:#22c55e;
-    color:white;
-}
-
-.odemeBtn{
-    background:#f59e0b;
-    color:white;
-}
-
-.wpBtn{
-    background:#25D366;
-    color:white;
-}
-
-.toplamBox{
-    text-align:center;
-    font-size:22px;
-    font-weight:bold;
-}
-
-.musteri{
-    background:#334155;
-    padding:15px;
-    border-radius:12px;
-    margin-top:15px;
-    animation:fade .3s;
-}
-
-@keyframes fade{
-    from{
-        opacity:0;
-        transform:translateY(10px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-
-.durum{
-    padding:5px 10px;
-    border-radius:20px;
-    display:inline-block;
-    margin-top:10px;
-    font-size:13px;
-}
-
-.borclu{
-    background:#ef4444;
-}
-
-.odendi{
-    background:#22c55e;
-}
-
-.actions{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:15px;
-}
-
-.login{
-    max-width:400px;
-    margin:100px auto;
-}
-
-.hidden{
-    display:none;
-}
-
+.kayit{background:#22c55e;color:white;}
+.giris{background:#3b82f6;color:white;}
 </style>
 </head>
 
 <body>
 
-<div id="loginPage" class="login">
+<div class="box">
+<h2>Giriş Sistemi</h2>
 
-<div class="card">
+<input id="u" placeholder="Kullanıcı adı">
+<input id="p" type="password" placeholder="Şifre">
 
-<h1>Giriş Yap</h1>
-
-<input type="password" id="sifre" placeholder="Şifre">
-
-<button class="ekleBtn" onclick="giris()">
-Giriş
-</button>
-
+<button class="kayit" onclick="kayit(u.value,p.value)">Kayıt Ol</button>
+<button class="giris" onclick="giris(u.value,p.value)">Giriş Yap</button>
 </div>
 
-</div>
+<script type="module">
 
-<div id="app" class="hidden">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-<div class="container">
+const firebaseConfig = {
+  apiKey: "AIzaSyA8BbnrGzsljYnsUV5pqROzQL--C686n_0",
+  authDomain: "musteri-sistem.firebaseapp.com",
+  projectId: "musteri-sistem",
+  storageBucket: "musteri-sistem.firebasestorage.app",
+  messagingSenderId: "856410939016",
+  appId: "1:856410939016:web:5b929ed65a3dab8a90893d"
+};
 
-<div class="card">
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-<h1>Pro Müşteri Takip</h1>
-
-<input type="text" id="ad" placeholder="Ad Soyad">
-
-<input type="number" id="toplamBorc" placeholder="Toplam Borç">
-
-<input type="number" id="odenen" placeholder="Ödenen Miktar">
-
-<input type="text" id="telefon" placeholder="Telefon">
-
-<textarea id="not" placeholder="Not"></textarea>
-
-<button class="ekleBtn" onclick="musteriEkle()">
-Müşteri Kaydet
-</button>
-
-</div>
-
-<div class="card toplamBox">
-
-Toplam Alacak:
-<span id="genelToplam">0</span> TL
-
-</div>
-
-<div class="card">
-
-<input type="text" id="arama" placeholder="Müşteri Ara" onkeyup="goster()">
-
-<div id="liste"></div>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-const SIFRE = "1234";
-
-function giris(){
-
-    let sifre =
-    document.getElementById("sifre").value;
-
-    if(sifre === SIFRE){
-
-        document
-        .getElementById("loginPage")
-        .classList.add("hidden");
-
-        document
-        .getElementById("app")
-        .classList.remove("hidden");
-
-    }else{
-        alert("Şifre yanlış");
-    }
+// username → fake email
+function toEmail(u){
+  return u + "@app.local";
 }
 
-let musteriler =
-JSON.parse(localStorage.getItem("proMusteriler"))
-|| [];
+// KAYIT
+window.kayit = function(username, password){
 
-let duzenlenen = -1;
+  createUserWithEmailAndPassword(auth, toEmail(username), password)
+  .then(()=>{
+      alert("Kayıt başarılı");
+  })
+  .catch(e=>{
+      alert(e.message);
+  });
 
-function kaydet(){
-
-    localStorage.setItem(
-        "proMusteriler",
-        JSON.stringify(musteriler)
-    );
 }
 
-function genelToplam(){
+// GİRİŞ
+window.giris = function(username, password){
 
-    let toplam = 0;
+  signInWithEmailAndPassword(auth, toEmail(username), password)
+  .then(()=>{
+      alert("Giriş başarılı");
+      document.body.innerHTML = "<h1 style='color:white'>Giriş yaptın 🎉</h1>";
+  })
+  .catch(()=>{
+      alert("Hatalı giriş");
+  });
 
-    musteriler.forEach(m=>{
-
-        toplam += Number(m.kalan);
-    });
-
-    document
-    .getElementById("genelToplam")
-    .innerText = toplam;
 }
-
-function goster(){
-
-    let liste =
-    document.getElementById("liste");
-
-    let arama =
-    document.getElementById("arama")
-    .value
-    .toLowerCase();
-
-    liste.innerHTML = "";
-
-    musteriler.forEach((m,i)=>{
-
-        if(m.ad.toLowerCase().includes(arama)){
-
-            let durum =
-            m.kalan > 0
-            ? "Borçlu"
-            : "Ödendi";
-
-            let className =
-            m.kalan > 0
-            ? "borclu"
-            : "odendi";
-
-            liste.innerHTML += `
-
-            <div class="musteri">
-
-            <h2>${m.ad}</h2>
-
-            <p>
-            Toplam Borç:
-            ${m.toplamBorc} TL
-            </p>
-
-            <p>
-            Ödenen:
-            ${m.odenen} TL
-            </p>
-
-            <p>
-            Kalan:
-            ${m.kalan} TL
-            </p>
-
-            <p>
-            Telefon:
-            ${m.telefon}
-            </p>
-
-            <p>
-            Not:
-            ${m.not}
-            </p>
-
-            <div class="durum ${className}">
-            ${durum}
-            </div>
-
-            <div class="actions">
-
-            <button
-            class="duzenleBtn"
-            onclick="duzenle(${i})">
-            Düzenle
-            </button>
-
-            <button
-            class="silBtn"
-            onclick="sil(${i})">
-            Sil
-            </button>
-
-            <button
-            class="odemeBtn"
-            onclick="odemeEkle(${i})">
-            Ödeme Ekle
-            </button>
-
-            <button
-            class="wpBtn"
-            onclick="whatsapp('${m.telefon}')">
-            WhatsApp
-            </button>
-
-            </div>
-
-            </div>
-
-            `;
-        }
-    });
-
-    genelToplam();
-}
-
-function musteriEkle(){
-
-    let ad =
-    document.getElementById("ad").value;
-
-    let toplamBorc =
-    Number(
-    document.getElementById("toplamBorc")
-    .value);
-
-    let odenen =
-    Number(
-    document.getElementById("odenen")
-    .value);
-
-    let telefon =
-    document.getElementById("telefon")
-    .value;
-
-    let not =
-    document.getElementById("not")
-    .value;
-
-    if(ad==""){
-        alert("Ad gir");
-        return;
-    }
-
-    let kalan =
-    toplamBorc - odenen;
-
-    let yeni = {
-
-        ad,
-        toplamBorc,
-        odenen,
-        kalan,
-        telefon,
-        not
-    };
-
-    if(duzenlenen == -1){
-
-        musteriler.push(yeni);
-
-    }else{
-
-        musteriler[duzenlenen] = yeni;
-
-        duzenlenen = -1;
-    }
-
-    kaydet();
-
-    goster();
-
-    temizle();
-}
-
-function temizle(){
-
-    document.getElementById("ad").value="";
-    document.getElementById("toplamBorc").value="";
-    document.getElementById("odenen").value="";
-    document.getElementById("telefon").value="";
-    document.getElementById("not").value="";
-}
-
-function sil(i){
-
-    let cevap =
-    confirm("Silinsin mi?");
-
-    if(cevap){
-
-        musteriler.splice(i,1);
-
-        kaydet();
-
-        goster();
-    }
-}
-
-function duzenle(i){
-
-    let m = musteriler[i];
-
-    document.getElementById("ad").value =
-    m.ad;
-
-    document.getElementById("toplamBorc")
-    .value = m.toplamBorc;
-
-    document.getElementById("odenen")
-    .value = m.odenen;
-
-    document.getElementById("telefon")
-    .value = m.telefon;
-
-    document.getElementById("not")
-    .value = m.not;
-
-    duzenlenen = i;
-
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
-}
-
-function odemeEkle(i){
-
-    let miktar =
-    prompt("Ödeme miktarı");
-
-    if(miktar){
-
-        musteriler[i].odenen +=
-        Number(miktar);
-
-        musteriler[i].kalan =
-        musteriler[i].toplamBorc
-        - musteriler[i].odenen;
-
-        kaydet();
-
-        goster();
-    }
-}
-
-function whatsapp(numara){
-
-    window.open(
-    `https://wa.me/${numara}`,
-    "_blank"
-    );
-}
-
-goster();
 
 </script>
 
