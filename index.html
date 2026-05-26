@@ -13,6 +13,7 @@ body{
     margin:0;
 }
 
+/* LOGIN */
 .center{
     height:100vh;
     display:flex;
@@ -30,7 +31,7 @@ body{
 input, textarea{
     width:100%;
     padding:10px;
-    margin:5px 0;
+    margin-top:5px;
     border:none;
     border-radius:8px;
 }
@@ -47,11 +48,22 @@ button{
 .kayit{background:#22c55e;color:white;}
 .giris{background:#3b82f6;color:white;}
 
-.hidden{display:none;}
-
+/* PANEL */
 .panel{
+    display:none;
     padding:20px;
 }
+
+.card{
+    background:#1e293b;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.add{background:#22c55e;color:white;}
+.wp{background:#25D366;color:white;}
+.del{background:#ef4444;color:white;}
 
 .musteri{
     background:#334155;
@@ -67,34 +79,34 @@ button{
 <!-- LOGIN -->
 <div id="login" class="center">
 <div class="box">
-<h2>Giriş Sistemi</h2>
+<h2>Giriş</h2>
 
 <input id="u" placeholder="Kullanıcı adı">
 <input id="p" type="password" placeholder="Şifre">
 
 <button class="kayit" onclick="kayit(u.value,p.value)">Kayıt Ol</button>
 <button class="giris" onclick="giris(u.value,p.value)">Giriş Yap</button>
+
 </div>
 </div>
 
 <!-- PANEL -->
-<div id="panel" class="hidden">
+<div id="panel" class="panel">
 
-<div style="padding:20px;">
-
+<div class="card">
 <h2>Müşteri Ekle</h2>
 
 <input id="ad" placeholder="Ad Soyad">
-<input id="borc" type="number" placeholder="Borç">
+<input id="tel" placeholder="Telefon (90...)">
+<input id="borc" placeholder="Borç">
 <textarea id="not" placeholder="Not"></textarea>
 
-<button onclick="ekle()">Ekle</button>
+<button class="add" onclick="ekle()">Ekle</button>
+</div>
 
-<hr>
-
+<div class="card">
 <h2>Müşteriler</h2>
 <div id="liste"></div>
-
 </div>
 
 </div>
@@ -122,7 +134,7 @@ const auth = getAuth(app);
 
 const mail = (u)=> u + "@app.local";
 
-// LOGIN
+/* LOGIN */
 window.kayit = function(u,p){
 createUserWithEmailAndPassword(auth, mail(u), p)
 .then(()=>alert("Kayıt başarılı"))
@@ -133,22 +145,22 @@ window.giris = function(u,p){
 signInWithEmailAndPassword(auth, mail(u), p)
 .then(()=>{
     document.getElementById("login").style.display="none";
-    document.getElementById("panel").classList.remove("hidden");
+    document.getElementById("panel").style.display="block";
 })
 .catch(()=>alert("Hatalı giriş"));
 }
 
-// MÜŞTERİ
+/* CRM */
 let musteriler = JSON.parse(localStorage.getItem("musteriler")) || [];
 
 window.ekle = function(){
 
 let ad = document.getElementById("ad").value;
+let tel = document.getElementById("tel").value;
 let borc = document.getElementById("borc").value;
 let not = document.getElementById("not").value;
 
-musteriler.push({ad,borc,not});
-
+musteriler.push({ad,tel,borc,not});
 localStorage.setItem("musteriler", JSON.stringify(musteriler));
 
 goster();
@@ -159,17 +171,40 @@ window.goster = function(){
 let liste = document.getElementById("liste");
 liste.innerHTML = "";
 
-musteriler.forEach(m=>{
+musteriler.forEach((m,i)=>{
+
+let mesaj = `Merhaba ${m.ad}, borcunuz ${m.borc} TL`;
+
 liste.innerHTML += `
 <div class="musteri">
 <b>${m.ad}</b><br>
+Telefon: ${m.tel}<br>
 Borç: ${m.borc}<br>
 Not: ${m.not}
+
+<button class="wp"
+onclick="window.open('https://wa.me/${m.tel}?text=${encodeURIComponent(mesaj)}')">
+WhatsApp
+</button>
+
+<button class="del" onclick="sil(${i})">
+Sil
+</button>
+
 </div>
 `;
+
 });
 
 }
+
+window.sil = function(i){
+musteriler.splice(i,1);
+localStorage.setItem("musteriler", JSON.stringify(musteriler));
+goster();
+}
+
+goster();
 
 </script>
 
